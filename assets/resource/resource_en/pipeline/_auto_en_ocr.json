@@ -1034,8 +1034,12 @@
     },
     "通用战斗任务开始": {
         "expected": [
-            "Combat Start"
+            "Combat Start",
+            "Trial Doll Introduction"
         ]
+    },
+    "发现人形介绍界面-通用战斗": {
+        "expected": "Trial Doll Introduction"
     },
     "已进入作战开始页面-通用战斗": {
         "expected": "Combat Start"

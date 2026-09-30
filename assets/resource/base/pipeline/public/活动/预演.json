@@ -82,6 +82,7 @@
         ],
         "action": "Click",
         "next": [
+            "[JumpBack]发现人形介绍界面-通用战斗",
             "[JumpBack]通用战斗任务开始",
             "returnToHomePage"
         ]
