@@ -1,4 +1,5 @@
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -40,6 +41,32 @@ class PeakIncompleteSlotsTest(unittest.TestCase):
         en = json.loads((ASSETS / 'resource/resource_en/pipeline/极限峰值缺员作战.json').read_text())
         self.assertEqual(en['确认缺员作战-极限峰值']['expected'], '^Confirm$')
         self.assertIn('发现可部署人形提示-极限峰值缺员作战', en)
+
+    def test_screenshot_warning_can_resume_without_combat_start(self):
+        # Manual transcription of the user's cropped popup, not an OCR result.
+        warning = '还有可部署的武装小组，是否确定开始作战？'
+        detector = '发现可部署人形提示-极限峰值缺员作战'
+        entry = self.nodes[ENTRY]
+        self.assertTrue(any(re.search(pattern, warning) for pattern in entry['expected']))
+        self.assertLess(entry['next'].index(detector),
+                        entry['next'].index('已进入作战开始页面-极限峰值缺员作战'))
+        popup = self.nodes[detector]
+        self.assertTrue(any(re.search(pattern, warning) for pattern in popup['expected']))
+        for unrelated in ['可部署人形', '是否确定退出作战？', '确认购买', '注意']:
+            self.assertFalse(any(re.search(pattern, unrelated) for pattern in popup['expected']))
+        confirm = self.nodes[popup['next'][0]]
+        self.assertIsNotNone(re.search(confirm['expected'], '确认'))
+        for unrelated in ['取消', '确定', '是否确定开始作战？', '确认购买']:
+            self.assertIsNone(re.search(confirm['expected'], unrelated))
+        # A cropped popup supplies no game-window coordinates. Click the OCR box.
+        for node in [popup, confirm]:
+            self.assertNotIn('roi', node)
+            self.assertNotIn('target', node)
+        self.assertEqual(confirm['action'], 'Click')
+        # If the first click is not accepted, recognize the warning again.
+        self.assertEqual(confirm['next'][0], detector)
+        en = json.loads((ASSETS / 'resource/resource_en/pipeline/极限峰值缺员作战.json').read_text())
+        self.assertTrue(set(en[detector]['expected']).issubset(en[ENTRY]['expected']))
 
 if __name__ == '__main__':
     unittest.main()
