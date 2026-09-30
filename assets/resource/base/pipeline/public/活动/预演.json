@@ -23,7 +23,7 @@
         ]
     },
     "clickTrialTab": {
-        "doc": "点击预演，没打过的会排在第一个",
+        "doc": "点击列表中的第一项预演；已完成的预演移到尾部，未完成的自然留在前面。",
         "recognition": "OCR",
         "expected": [
             "预演"
@@ -34,6 +34,7 @@
         ],
         "action": "Click",
         "order_by": "Vertical",
+        "index": 0,
         "next": [
             "trialTabClicked"
         ]
@@ -71,12 +72,14 @@
     "trialRewardNotClaimed": {
         "doc": "预演奖励未领取",
         "next": [
-            "autoBattleForTrial"
+            "autoBattleForTrial",
+            "预演战斗尝试次数达到上限"
         ]
     },
     "autoBattleForTrial": {
-        "doc": "开始自动战斗",
+        "doc": "开始自动战斗；结束后重新选择第一项，已完成预演移到尾部后继续处理剩余角色。限制总尝试次数，避免失败后无限重复。",
         "recognition": "OCR",
+        "max_hit": 8,
         "expected": [
             "前往"
         ],
@@ -84,6 +87,16 @@
         "next": [
             "[JumpBack]发现人形介绍界面-通用战斗",
             "[JumpBack]通用战斗任务开始",
+            "clickTrialTab",
+            "returnToHomePage"
+        ]
+    },
+    "预演战斗尝试次数达到上限": {
+        "doc": "一次活动任务最多尝试8场预演；达到上限时提示并退出，不视为全部完成。",
+        "focus": {
+            "Node.Action.Starting": "<span style=\"color: orange;\">预演已达到8次战斗尝试上限，可能仍有未完成角色，请检查战斗结果或手动处理</span>"
+        },
+        "next": [
             "returnToHomePage"
         ]
     }
