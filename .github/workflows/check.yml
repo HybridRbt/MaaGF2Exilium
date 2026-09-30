@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -36,3 +38,11 @@ jobs:
 
       - name: Check Resource
         run: python check_resource.py
+
+      - name: Build version-specific dialog test patch
+        run: python scripts/build_dialog_patch.py --output build/dialog-test
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dialog-test-patch-v2.7.2
+          path: build/dialog-test/MaaGF2Exilium-dialog-patch-v2.7.2.zip
