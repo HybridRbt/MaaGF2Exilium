@@ -62,6 +62,23 @@ class DialogPatchPackageTest(unittest.TestCase):
         installer.rollback(self.root)
         self.assertEqual(self.snapshot(), self.before)
 
+    def test_windows_newlines_and_bom_install_and_restore_original_bytes(self):
+        for target in self.root.rglob('*.json'):
+            if 'pipeline' in target.parts:
+                target.write_bytes(b'\xef\xbb\xbf' + target.read_bytes().replace(b'\n', b'\r\n'))
+        before = self.snapshot()
+        installer.apply(self.root, self.package)
+        installer.rollback(self.root)
+        self.assertEqual(self.snapshot(), before)
+
+    def test_newline_tolerance_does_not_accept_changed_pipeline_content(self):
+        target = next(p for p in self.root.rglob('*.json') if 'pipeline' in p.parts)
+        target.write_bytes(b'\xef\xbb\xbf' + target.read_bytes().replace(b'\n', b'\r\n') + b'// changed content\r\n')
+        before = self.snapshot()
+        with self.assertRaisesRegex(ValueError, 'differs from v2.7.2'):
+            installer.apply(self.root, self.package)
+        self.assertEqual(self.snapshot(), before)
+
     def test_wrong_version_and_modified_resources_leave_installation_untouched(self):
         interface = installer.read_json(self.root / 'interface.json')
         interface['version'] = 'v2.7.3'

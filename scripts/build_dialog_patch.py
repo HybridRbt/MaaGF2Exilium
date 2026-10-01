@@ -40,6 +40,7 @@ def build(destination):
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(content)
         manifest['files'].append({'path': rel, 'before_sha256': hashlib.sha256(before).hexdigest() if before is not None else None,
+                                  'before_text_sha256': hashlib.sha256(before.decode('utf-8-sig').replace('\r\n', '\n').replace('\r', '\n').encode('utf-8')).hexdigest() if before is not None and path.endswith(('.json', '.jsonc')) else None,
                                   'after_sha256': hashlib.sha256(content).hexdigest()})
     interface = json.loads((ROOT / 'assets/interface.json').read_text())
     additions = {'option': interface['option'][OPTION], 'labels': {}}
@@ -57,6 +58,14 @@ def build(destination):
         for path in sorted(package.rglob('*')):
             if path.is_file():
                 z.write(path, path.relative_to(destination))
+    copy_archive = destination / 'MaaGF2Exilium-copy-and-shortcut-v2.7.2-r2.zip'
+    with zipfile.ZipFile(copy_archive, 'w', zipfile.ZIP_DEFLATED) as z:
+        for path in sorted(package.rglob('*')):
+            if path.is_file():
+                z.write(path, path.relative_to(destination))
+        z.write(ROOT / 'scripts/dialog_patch/deploy-copy.ps1', 'deploy-copy.ps1')
+        z.writestr('install-copy.bat', '@echo off\r\npowershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File "%~dp0deploy-copy.ps1"\r\nif errorlevel 1 pause\r\n')
+        z.writestr('README.txt', 'Extract the entire ZIP, then double-click install-copy.bat.\r\nSelect the original MaaGF2Exilium.exe (or MFAAvalonia.exe).\r\nOnly a new sibling copy is patched; a desktop shortcut points to that copy.\r\nClose the original assistant first. Do not select a failed test-copy folder.\r\nIf installation fails, the dialog shows the underlying error and log path.\r\n')
     return archive
 
 

@@ -46,3 +46,8 @@ jobs:
         with:
           name: dialog-test-patch-v2.7.2
           path: build/dialog-test/MaaGF2Exilium-dialog-patch-v2.7.2.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dialog-copy-installer-v2.7.2-r2
+          path: build/dialog-test/MaaGF2Exilium-copy-and-shortcut-v2.7.2-r2.zip

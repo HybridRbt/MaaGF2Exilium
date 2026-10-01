@@ -15,6 +15,13 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def text_digest(data):
+    # Windows release packaging can change LF to CRLF or add a UTF-8 BOM.
+    # Accept those representation differences only; keep all content checks.
+    text = data.decode('utf-8-sig').replace('\r\n', '\n').replace('\r', '\n')
+    return digest(text.encode('utf-8'))
+
+
 def read_json(path):
     return json.loads(path.read_text(encoding='utf-8-sig'))
 
@@ -57,8 +64,18 @@ def apply(root, package):
         if expected is None:
             if target.exists():
                 raise ValueError('New patch file already exists: ' + rel)
-        elif not target.is_file() or digest(target.read_bytes()) != expected:
-            raise ValueError('Installed file differs from v2.7.2: ' + rel)
+        else:
+            if not target.is_file():
+                raise ValueError('Installed file is missing: ' + rel)
+            actual = target.read_bytes()
+            matches = digest(actual) == expected
+            if not matches and item.get('before_text_sha256'):
+                try:
+                    matches = text_digest(actual) == item['before_text_sha256']
+                except UnicodeDecodeError:
+                    matches = False
+            if not matches:
+                raise ValueError('Installed file differs from v2.7.2: ' + rel)
         content = safe_path(package / 'payload', rel).read_bytes()
         if digest(content) != item['after_sha256']:
             raise ValueError('Package file is damaged: ' + rel)
