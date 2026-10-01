@@ -22,14 +22,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.x"
 
-      - name: Install maafw
-        run: pip install -U maafw
+      - name: Install validation dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Test task routing
+        run: python -m unittest discover -s tests -v
 
       - name: Check Resource
         run: python check_resource.py
+
+      - name: Build version-specific dialog test patch
+        run: python scripts/build_dialog_patch.py --output build/dialog-test
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dialog-test-patch-v2.7.2
+          path: build/dialog-test/MaaGF2Exilium-dialog-patch-v2.7.2.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dialog-copy-installer-v2.7.2-r3
+          path: build/dialog-test/MaaGF2Exilium-copy-and-shortcut-v2.7.2-r3.zip
