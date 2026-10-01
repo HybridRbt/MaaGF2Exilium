@@ -97,6 +97,16 @@ try {
     $shortcut.IconLocation = $copyExe + ',0'
     $shortcut.Description = '独立副本：极限峰值缺员确认、预演介绍关闭及多角色连续预演测试'
     $shortcut.Save()
+    # Shell Link Header: RunAsUser (0x00002000) requests elevation at launch.
+    $linkBytes = [System.IO.File]::ReadAllBytes($shortcutPath)
+    if ($linkBytes.Length -lt 76 -or [BitConverter]::ToUInt32($linkBytes, 0) -ne 76) {
+        throw '快捷方式头部格式异常，无法设置管理员启动。'
+    }
+    $linkBytes[21] = $linkBytes[21] -bor 32
+    [System.IO.File]::WriteAllBytes($shortcutPath, $linkBytes)
+    if ((([System.IO.File]::ReadAllBytes($shortcutPath))[21] -band 32) -eq 0) {
+        throw '快捷方式管理员启动标志验证失败。'
+    }
     $check = $shell.CreateShortcut($shortcutPath)
     if ($check.TargetPath -ne $copyExe -or $check.WorkingDirectory -ne $copiedFolder) {
         throw '快捷方式指向校验失败，请保留副本并反馈。'

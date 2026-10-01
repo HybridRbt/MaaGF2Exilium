@@ -58,7 +58,7 @@ def build(destination):
         for path in sorted(package.rglob('*')):
             if path.is_file():
                 z.write(path, path.relative_to(destination))
-    copy_archive = destination / 'MaaGF2Exilium-copy-and-shortcut-v2.7.2-r2.zip'
+    copy_archive = destination / 'MaaGF2Exilium-copy-and-shortcut-v2.7.2-r3.zip'
     with zipfile.ZipFile(copy_archive, 'w', zipfile.ZIP_DEFLATED) as z:
         for path in sorted(package.rglob('*')):
             if path.is_file():

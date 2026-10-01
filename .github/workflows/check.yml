@@ -49,5 +49,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dialog-copy-installer-v2.7.2-r2
-          path: build/dialog-test/MaaGF2Exilium-copy-and-shortcut-v2.7.2-r2.zip
+          name: dialog-copy-installer-v2.7.2-r3
+          path: build/dialog-test/MaaGF2Exilium-copy-and-shortcut-v2.7.2-r3.zip
